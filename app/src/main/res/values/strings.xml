@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MP3 Player</string>
+    <string name="back">Back</string>
+    <string name="album_artwork">Album Artwork</string>
+    <string name="previous">Previous</string>
+    <string name="play_pause">Play/Pause</string>
+    <string name="next">Next</string>
+    <string name="add_to_library">Add to Library</string>
+</resources>
