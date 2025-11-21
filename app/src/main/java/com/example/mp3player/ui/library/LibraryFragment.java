@@ -24,6 +24,7 @@ public class LibraryFragment extends Fragment {
     private LibraryViewModel libraryViewModel;
     private RecyclerView rvLibraryTracks;
     private TextView tvEmptyState;
+    private android.widget.ProgressBar progressBar;
     private TrackAdapter trackAdapter;
     
     @Nullable
@@ -35,6 +36,7 @@ public class LibraryFragment extends Fragment {
         
         rvLibraryTracks = view.findViewById(R.id.rvLibraryTracks);
         tvEmptyState = view.findViewById(R.id.tvEmptyState);
+        progressBar = view.findViewById(R.id.progressBar);
         
         setupRecyclerView();
         observeViewModel();
@@ -57,7 +59,11 @@ public class LibraryFragment extends Fragment {
                 } else {
                     activity.playTrack(track);
                 }
-                Toast.makeText(requireContext(), "Playing: " + track.getTitle(), Toast.LENGTH_SHORT).show();
+                
+                // Open PlayerActivity
+                android.content.Intent intent = new android.content.Intent(requireContext(), com.example.mp3player.ui.player.PlayerActivity.class);
+                intent.putExtra(com.example.mp3player.ui.player.PlayerActivity.EXTRA_TRACK, track);
+                startActivity(intent);
             }
             
             @Override
@@ -102,9 +108,13 @@ public class LibraryFragment extends Fragment {
             }
         });
         
+        libraryViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        });
+        
         libraryViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
             }
         });
     }

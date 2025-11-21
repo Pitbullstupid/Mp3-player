@@ -89,7 +89,11 @@ public class SearchFragment extends Fragment {
                 } else {
                     activity.playTrack(track);
                 }
-                Toast.makeText(requireContext(), "Playing: " + track.getTitle(), Toast.LENGTH_SHORT).show();
+                
+                // Open PlayerActivity
+                android.content.Intent intent = new android.content.Intent(requireContext(), com.example.mp3player.ui.player.PlayerActivity.class);
+                intent.putExtra(com.example.mp3player.ui.player.PlayerActivity.EXTRA_TRACK, track);
+                startActivity(intent);
             }
             
             @Override
@@ -110,7 +114,13 @@ public class SearchFragment extends Fragment {
                     com.example.mp3player.viewmodels.LibraryViewModel libraryViewModel = 
                         new ViewModelProvider(requireActivity()).get(com.example.mp3player.viewmodels.LibraryViewModel.class);
                     libraryViewModel.addToLibrary(track);
-                    Toast.makeText(requireContext(), "Added to library", Toast.LENGTH_SHORT).show();
+                    
+                    // Observe the result
+                    libraryViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
+                        if (message != null && !message.isEmpty()) {
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

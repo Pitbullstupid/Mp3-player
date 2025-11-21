@@ -15,6 +15,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private final MusicRepository musicRepository;
     private final UserRepository userRepository;
     private final MutableLiveData<List<Track>> libraryTracks;
+    private final MutableLiveData<Boolean> isLoading;
     private final MutableLiveData<String> errorMessage;
     
     public LibraryViewModel(Application application) {
@@ -22,6 +23,7 @@ public class LibraryViewModel extends AndroidViewModel {
         this.musicRepository = new MusicRepository(application);
         this.userRepository = new UserRepository(application);
         this.libraryTracks = new MutableLiveData<>();
+        this.isLoading = new MutableLiveData<>(false);
         this.errorMessage = new MutableLiveData<>();
     }
     
@@ -29,11 +31,16 @@ public class LibraryViewModel extends AndroidViewModel {
         return libraryTracks;
     }
     
+    public MutableLiveData<Boolean> getIsLoading() {
+        return isLoading;
+    }
+    
     public MutableLiveData<String> getErrorMessage() {
         return errorMessage;
     }
     
     public void loadLibrary() {
+        isLoading.setValue(true);
         if (userRepository.getCurrentUser() == null) {
             errorMessage.setValue("Please login to view your library");
             return;
@@ -42,6 +49,7 @@ public class LibraryViewModel extends AndroidViewModel {
         long userId = userRepository.getCurrentUser().getId();
         List<Track> tracks = musicRepository.getLibraryTracks(userId);
         libraryTracks.setValue(tracks);
+        isLoading.setValue(false);
     }
     
     public void addToLibrary(Track track) {
@@ -51,12 +59,15 @@ public class LibraryViewModel extends AndroidViewModel {
         }
         
         long userId = userRepository.getCurrentUser().getId();
-        boolean success = musicRepository.addToLibrary(userId, track);
+        int result = musicRepository.addToLibrary(userId, track);
         
-        if (success) {
+        if (result == 1) {
             loadLibrary();
-        } else {
+            errorMessage.setValue("Added to library");
+        } else if (result == 0) {
             errorMessage.setValue("Track already in library");
+        } else {
+            errorMessage.setValue("Failed to add to library");
         }
     }
     

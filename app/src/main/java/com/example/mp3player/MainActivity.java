@@ -82,6 +82,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        // Request notification permission for Android 13+
+        if (!com.example.mp3player.utils.PermissionHelper.hasNotificationPermission(this)) {
+            com.example.mp3player.utils.PermissionHelper.requestNotificationPermission(this);
+        }
+        
         bottomNavigation = findViewById(R.id.bottomNavigation);
         miniPlayerContainer = findViewById(R.id.miniPlayerContainer);
         
@@ -170,6 +175,35 @@ public class MainActivity extends AppCompatActivity {
     
     public boolean isServiceBound() {
         return serviceBound;
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == com.example.mp3player.utils.PermissionHelper.NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+                android.widget.Toast.makeText(this, "Notification permission granted", android.widget.Toast.LENGTH_SHORT).show();
+            } else {
+                // Permission denied
+                android.widget.Toast.makeText(this, "Notification permission denied. You won't see playback notifications.", android.widget.Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Update mini player when returning from PlayerActivity
+        if (serviceBound && musicService != null) {
+            Track currentTrack = musicService.getCurrentTrack();
+            if (currentTrack != null) {
+                miniPlayerView.updateTrackInfo(currentTrack);
+                miniPlayerView.updatePlaybackState(musicService.isPlaying());
+                showMiniPlayer();
+            }
+        }
     }
     
     @Override

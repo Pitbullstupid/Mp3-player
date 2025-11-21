@@ -91,11 +91,27 @@ public class MiniPlayerView extends ConstraintLayout {
                 ivMiniAlbumArt.setImageResource(R.drawable.placeholder_album);
             }
             
-            // Show the mini player
-            setVisibility(VISIBLE);
+            // Show the mini player with animation
+            if (getVisibility() != VISIBLE) {
+                setVisibility(VISIBLE);
+                setAlpha(0f);
+                setTranslationY(100f);
+                animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(300)
+                    .start();
+            }
         } else {
-            // Hide the mini player if no track
-            setVisibility(GONE);
+            // Hide the mini player with animation
+            if (getVisibility() == VISIBLE) {
+                animate()
+                    .alpha(0f)
+                    .translationY(100f)
+                    .setDuration(300)
+                    .withEndAction(() -> setVisibility(GONE))
+                    .start();
+            }
         }
     }
     

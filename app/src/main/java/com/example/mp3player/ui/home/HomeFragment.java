@@ -22,6 +22,10 @@ public class HomeFragment extends Fragment {
     private HomeViewModel homeViewModel;
     private RecyclerView rvRecommended;
     private RecyclerView rvNewReleases;
+    private android.widget.ProgressBar progressBar;
+    private android.widget.LinearLayout errorLayout;
+    private android.widget.TextView tvError;
+    private android.widget.Button btnRetry;
     private TrackAdapter recommendedAdapter;
     private TrackAdapter newReleasesAdapter;
     
@@ -34,6 +38,15 @@ public class HomeFragment extends Fragment {
         
         rvRecommended = view.findViewById(R.id.rvRecommended);
         rvNewReleases = view.findViewById(R.id.rvNewReleases);
+        progressBar = view.findViewById(R.id.progressBar);
+        errorLayout = view.findViewById(R.id.errorLayout);
+        tvError = view.findViewById(R.id.tvError);
+        btnRetry = view.findViewById(R.id.btnRetry);
+        
+        btnRetry.setOnClickListener(v -> {
+            errorLayout.setVisibility(View.GONE);
+            homeViewModel.refreshData();
+        });
         
         setupRecyclerViews();
         observeViewModel();
@@ -58,7 +71,11 @@ public class HomeFragment extends Fragment {
                 } else {
                     activity.playTrack(track);
                 }
-                Toast.makeText(requireContext(), "Playing: " + track.getTitle(), Toast.LENGTH_SHORT).show();
+                
+                // Open PlayerActivity
+                android.content.Intent intent = new android.content.Intent(requireContext(), com.example.mp3player.ui.player.PlayerActivity.class);
+                intent.putExtra(com.example.mp3player.ui.player.PlayerActivity.EXTRA_TRACK, track);
+                startActivity(intent);
             }
             
             @Override
@@ -83,7 +100,11 @@ public class HomeFragment extends Fragment {
                 } else {
                     activity.playTrack(track);
                 }
-                Toast.makeText(requireContext(), "Playing: " + track.getTitle(), Toast.LENGTH_SHORT).show();
+                
+                // Open PlayerActivity
+                android.content.Intent intent = new android.content.Intent(requireContext(), com.example.mp3player.ui.player.PlayerActivity.class);
+                intent.putExtra(com.example.mp3player.ui.player.PlayerActivity.EXTRA_TRACK, track);
+                startActivity(intent);
             }
             
             @Override
@@ -109,9 +130,18 @@ public class HomeFragment extends Fragment {
             }
         });
         
+        homeViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            if (isLoading) {
+                errorLayout.setVisibility(View.GONE);
+            }
+        });
+        
         homeViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                tvError.setText(error);
+                errorLayout.setVisibility(View.VISIBLE);
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -124,7 +154,13 @@ public class HomeFragment extends Fragment {
                     com.example.mp3player.viewmodels.LibraryViewModel libraryViewModel = 
                         new ViewModelProvider(requireActivity()).get(com.example.mp3player.viewmodels.LibraryViewModel.class);
                     libraryViewModel.addToLibrary(track);
-                    Toast.makeText(requireContext(), "Added to library", Toast.LENGTH_SHORT).show();
+                    
+                    // Observe the result
+                    libraryViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
+                        if (message != null && !message.isEmpty()) {
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

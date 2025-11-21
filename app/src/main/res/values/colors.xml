@@ -5,6 +5,8 @@
     
     <!-- App Theme Colors -->
     <color name="primary">#1DB954</color>
+    <color name="primary_dark">#1AA34A</color>
+    <color name="accent">#1DB954</color>
     <color name="background">#121212</color>
     <color name="surface">#282828</color>
     <color name="text_primary">#FFFFFF</color>

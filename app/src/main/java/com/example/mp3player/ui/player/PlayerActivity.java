@@ -82,6 +82,9 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         
+        // Add slide up animation
+        overridePendingTransition(R.anim.slide_up, R.anim.fade_out);
+        
         // Initialize repositories
         musicRepository = new MusicRepository(this);
         userRepository = new UserRepository(this);
@@ -131,7 +134,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
     
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(R.anim.fade_in, R.anim.slide_down);
+        });
         
         btnPlayPause.setOnClickListener(v -> playerViewModel.togglePlayPause());
         
@@ -248,8 +254,10 @@ public class PlayerActivity extends AppCompatActivity {
     private void updateLibraryButton() {
         if (isInLibrary) {
             btnAddToLibrary.setImageResource(android.R.drawable.btn_star_big_on);
+            btnAddToLibrary.setColorFilter(getResources().getColor(R.color.accent, null));
         } else {
             btnAddToLibrary.setImageResource(android.R.drawable.btn_star_big_off);
+            btnAddToLibrary.setColorFilter(getResources().getColor(R.color.text_secondary, null));
         }
     }
     
@@ -272,11 +280,15 @@ public class PlayerActivity extends AppCompatActivity {
             }
         } else {
             // Add to library
-            boolean success = musicRepository.addToLibrary(user.getId(), currentTrack);
-            if (success) {
+            int result = musicRepository.addToLibrary(user.getId(), currentTrack);
+            if (result == 1) {
                 isInLibrary = true;
                 updateLibraryButton();
                 Toast.makeText(this, "Added to library", Toast.LENGTH_SHORT).show();
+            } else if (result == 0) {
+                isInLibrary = true;
+                updateLibraryButton();
+                Toast.makeText(this, "Track already in library", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Failed to add to library", Toast.LENGTH_SHORT).show();
             }

@@ -55,16 +55,16 @@ public class MusicRepository {
      * Add a track to user's library
      * @param userId The user ID
      * @param track The track to add
-     * @return true if added successfully, false otherwise
+     * @return 1 if added successfully, 0 if already in library, -1 if error
      */
-    public boolean addToLibrary(long userId, Track track) {
+    public int addToLibrary(long userId, Track track) {
         // Check if already in library
         if (databaseHelper.isTrackInLibrary(userId, track.getId())) {
-            return false;
+            return 0; // Already in library
         }
         
         long result = databaseHelper.insertLibraryTrack(userId, track);
-        return result != -1;
+        return result != -1 ? 1 : -1; // 1 = success, -1 = error
     }
     
     /**
